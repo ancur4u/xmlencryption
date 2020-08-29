@@ -1,0 +1,27 @@
+ankurparashar@ankurs-MacBook-Pro ~ % keytool -genkey -keyalg RSA -alias tomcat -keystore /Users/ankurparashar/Desktop/xmlselfsigned.jks 
+-validity 365 -keysize 2048
+                                
+Enter keystore password:  
+Re-enter new password: 
+What is your first and last name?
+  [Unknown]:  ankur parashar
+What is the name of your organizational unit?
+  [Unknown]:  uhone
+What is the name of your organization?
+  [Unknown]:  uhg
+What is the name of your City or Locality?
+  [Unknown]:  noida
+What is the name of your State or Province?
+  [Unknown]:  up
+What is the two-letter country code for this unit?
+  [Unknown]:  in
+Is CN=ankur parashar, OU=uhone, O=uhg, L=noida, ST=up, C=in correct?
+  [no]:  yes
+
+Enter key password for <tomcat>
+	(RETURN if same as keystore password):  
+Re-enter new password: 
+
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore /Users/ankurparashar/Desktop/xmlselfsigned.jks -destkeystore 
+/Users/ankurparashar/Desktop/xmlselfsigned.jks -deststoretype pkcs12".

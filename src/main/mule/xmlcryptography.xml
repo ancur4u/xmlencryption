@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="ac4a5968-17f1-4db1-b045-ad323b29c79a" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<crypto:jce-config name="Crypto_Jce" doc:name="Crypto Jce" doc:id="8e104469-d677-45db-9e90-320d18130dc2" keystore="selfsigned.jck" type="JCEKS" password="password" >
+		<crypto:jce-key-infos >
+			<crypto:jce-symmetric-key-info keyId="jceks" alias="aeskey" password="password" />
+		</crypto:jce-key-infos>
+	</crypto:jce-config>
+	<crypto:jce-config name="Crypto_Jce_xmlSign" doc:name="Crypto Jce" doc:id="09cc841a-7316-4302-9a1b-365b92740f9f" keystore="xmlselfsigned.jks" password="password" >
+		<crypto:jce-key-infos >
+			<crypto:jce-asymmetric-key-info keyId="jks" alias="tomcat" password="password" />
+		</crypto:jce-key-infos>
+	</crypto:jce-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="f5f009bc-2c60-403f-a367-7eb777a348f8" >
+		<file:connection workingDir="/Users/ankurparashar/AnypointStudio/studio-workspace/xmlcryptography/src/main/resources" />
+	</file:config>
+	<flow name="xmlencrypt" doc:id="e5ed87f2-0023-4565-86e1-4f8556a07941" >
+		<http:listener doc:name="Listener" doc:id="aab3e8e3-192d-46eb-9067-74878a5746f6" config-ref="HTTP_Listener_config" path="/xmlencrypt" allowedMethods="POST" />
+		<logger level="INFO" doc:name="Logger" doc:id="f0cf7b9c-e772-4fd2-b134-5da1f15429ad" message="xmlEncrypt request received: #[payload]" />
+		<crypto:xml-encrypt doc:id="e6236c9b-6ec8-4f54-a5db-d3be426c707d" config-ref="Crypto_Jce" keyId="jceks" doc:name="Xml encrypt" elementPath="/note/body"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ce111ade-b5bc-4438-8dd3-f9d36d30230f" message="XML Encrypted: #[payload]" />
+		<crypto:xml-decrypt doc:id="7bb3180e-0e34-4443-a267-cb1e450533a9" config-ref="Crypto_Jce" keyId="jceks" doc:name="Xml decrypt"/>
+		<logger level="INFO" doc:name="Logger" doc:id="fdb86ed7-9a54-44f3-9e4e-bdbbe7343908" message="Decrypted payload: #[payload]" />
+	</flow>
+	<flow name="XMLSignEnvloping" doc:id="ada163ba-58fd-432b-8663-c437cd31e557" >
+		<http:listener doc:name="Listener" doc:id="92a0c87e-25fe-4d69-9c3d-8e150c770507" config-ref="HTTP_Listener_config" path="/xmlfileEncrypt" />
+		<file:read doc:id="aa746e96-83fa-4cfd-af0f-1bf2111ce1a4" config-ref="File_Config" path="sample.xml" doc:name="Read" />
+		<crypto:xml-sign doc:name="Xml sign" doc:id="5857bce6-d312-4e87-840a-cec568252079" config-ref="Crypto_Jce_xmlSign" type="ENVELOPING" keyId="jks" />
+		<logger level="INFO" doc:name="Logger" doc:id="eaef0cd1-4295-4bc0-8064-3c7a3dcebda4" message="Encrypted payload: #[payload]" />
+	</flow>
+	<flow name="XMLSignDetach" doc:id="0c421e84-ad24-43eb-a859-3e60465efc6c" >
+		<http:listener doc:name="Listener" doc:id="50a428ff-fb36-4628-9167-5645708abe50" config-ref="HTTP_Listener_config" path="/xmlfileEncryptDetach" />
+		<file:read doc:id="06921d17-12d3-43f6-a32b-9b0c78143815" config-ref="File_Config" path="sample.xml" doc:name="Read" />
+		<crypto:xml-sign doc:name="Xml sign" doc:id="a26e7661-fe18-494d-8859-98c4d344a832" config-ref="Crypto_Jce_xmlSign" type="DETACHED" elementPath="/note/to" keyId="jks" />
+		<logger level="INFO" doc:name="Logger" doc:id="0646506d-7100-40d7-9190-fa7ff4cdc6e6" message="Encrypted payload: #[payload]" />
+		<crypto:xml-validate doc:name="Xml validate" doc:id="02fc368d-9d31-4cb9-b172-23f82bfdc7f8" config-ref="Crypto_Jce_xmlSign" elementPath="/note/to" keyId="jks" />
+	</flow>
+</mule>
